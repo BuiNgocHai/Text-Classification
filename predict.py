@@ -3,6 +3,14 @@ from importlib import import_module
 import pandas as pd
 import tqdm as tqdm
 import re
+import argparse
+import os
+
+parser = argparse.ArgumentParser(description='Bert predict')
+parser.add_argument('--text', type=str, required=False, help='Text to predict')
+parser.add_argument('--csv', type=str, required=False, help='Path to csv file want to predict')
+args = parser.parse_args()
+
 
 key = {
     0: 'beauty',
@@ -53,14 +61,34 @@ def predict(text):
     return key[int(num)]
 
 
+def preprocess(text):
+    text = re.sub(r"http\S+", '', text, flags=re.MULTILINE)
+    text = text.replace('\t', '').replace('\n' ,'')
+    return text
+
+
+def process_csv(csv_path):
+    if not os.path.isfile(csv_path):
+        print("File not found")
+        return False
+    data = pd.read_csv(csv_path)
+    data['class'] = ''
+    print('Process data.....')
+    for row in range(len(data)):
+        text = data['text'][row]
+        text = preprocess(text)
+        data['class'][row] = predict(text)
+    path_write = csv_path[:-4] + '_predict.csv'
+    data.to_csv(path_write, encoding='utf-8')
+    print('Save results in: ', path_write)
+    return True
+
+
 if __name__ == '__main__':
-    print(predict("When Baby John wants the attention of his mommy and daddy, he is taught the important lesson of good manners.  It is important that Baby John be patient and respectful of others.  Enjoy this new song Wait Your Turn by Little Angel  #littleangel  #littleangelnurseryrhymes  #babyjohnsongs"))
-    # data = pd.read_csv("./social_test.csv")
-    # data['class'] = ''
-    # for row in range(len(data)):
-    #     text = data['text'][row]
-    #     text = re.sub(r"http\S+", '', text, flags=re.MULTILINE)
-    #     text = text.replace('\t', '').replace('\n' ,'')
-    #     data['class'][row] = predict(text)
-    #     # break
-    # data.to_csv('predict.csv', encoding='utf-8')
+    if args.text:
+        text = preprocess(args.text)
+        print(predict(text))
+    if args.csv:
+        process_csv(args.csv)
+
+
