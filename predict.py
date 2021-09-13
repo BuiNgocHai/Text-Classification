@@ -9,6 +9,7 @@ import os
 parser = argparse.ArgumentParser(description='Bert predict')
 parser.add_argument('--text', type=str, required=False, help='Text to predict')
 parser.add_argument('--csv', type=str, required=False, help='Path to csv file want to predict')
+parser.add_argument('--device', type=str, default='cpu', help='cuda|cpu')
 args = parser.parse_args()
 
 
@@ -24,8 +25,9 @@ model_name = 'bert'
 x = import_module('models.' + model_name)
 config = x.Config('Social')
 #model = x.Model(config).to(config.device)
-model = x.Model(config).to('cpu')
-model.load_state_dict(torch.load(config.save_path, map_location='cuda'))
+device = args.device
+model = x.Model(config).to(device)
+model.load_state_dict(torch.load(config.save_path, map_location=device))
 
 
 def build_predict_text(text):
