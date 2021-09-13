@@ -21,3 +21,9 @@ To run with single sentence
 To run with csv file
 
 ```python predict.py --csv <path_to_csv>```
+
+To run with gpu:
+
+```python predict.py --csv <path_to_csv> --device cuda```
+
+If not select it will be run with cpu
